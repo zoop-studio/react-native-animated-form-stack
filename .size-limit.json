@@ -1,0 +1,9 @@
+[
+  {
+    "path": [
+      "dist/FormStack*.js",
+      "dist/FormStack*.ts"
+    ],
+    "limit": "2 KB"
+  }
+]
