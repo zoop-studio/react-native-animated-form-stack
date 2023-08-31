@@ -14,18 +14,13 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    env:
-      VERSION: ${{ github.ref_name#release/ }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Extract version
-        run: echo "version=${{ github.ref_name#release/ }}" >> $GITHUB_ENV
-
       - name: Add label
         run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label release -t ${{ version }}
+          gh pr edit ${{ github.event.pull_request.number }} --add-label release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
