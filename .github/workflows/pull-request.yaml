@@ -20,7 +20,7 @@ jobs:
 
       - name: Add label
         run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label release
+          gh pr edit ${{ github.event.pull_request.number }} --add-label release -t `${{ github.head_ref }}`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
