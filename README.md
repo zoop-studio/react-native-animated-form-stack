@@ -29,9 +29,11 @@ import { FormStack, IFormStackRef } from 'react-native-animated-form-stack';
 
 const Example = () => {
     const formStackRef = useRef<IFormStackRef>(null);
+    // You can obtain a step whenever it updated
+    const [step, setStep] = useState(0);
     
     return (
-        <FormStack ref={formStackRef}>
+        <FormStack ref={formStackRef} onUpdate={setStep}>
             {/* just place your form here! */}
             <YourField />
             <YourField />
@@ -50,6 +52,8 @@ import { FormStack, IFormStackRef } from 'react-native-animated-form-stack';
 
 const Example = () => {
     const formStackRef = useRef<IFormStackRef>(null);
+    // You can obtain a step whenever it updated
+    const [step, setStep] = useState(0);
     
 +    const handlePressPrev = () => {
 +        // Show previous step of field
@@ -62,7 +66,7 @@ const Example = () => {
 +    };
     
     return (
-        <FormStack ref={formStackRef}>
+        <FormStack ref={formStackRef} onUpdate={setStep}>
             {/* just place your form here! */}
             <YourField />
             <YourField />
