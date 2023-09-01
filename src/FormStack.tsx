@@ -19,6 +19,8 @@ import {
 
 export interface IFormStackProps {
   children: Array<ReactElement<ViewProps> | null>;
+
+  onUpdate?(step: number): void;
 }
 
 export interface IFormStackRef {
@@ -28,7 +30,7 @@ export interface IFormStackRef {
 }
 
 export const FormStack = forwardRef<IFormStackRef, IFormStackProps>(
-  ({children}, ref) => {
+  ({children, onUpdate}, ref) => {
     const [stack, setStack] = useState<number[]>([]);
     const [cursor, setCursor] = useState(0);
     const [transitionY] = useState(new Animated.Value(0));
@@ -40,7 +42,7 @@ export const FormStack = forwardRef<IFormStackRef, IFormStackProps>(
       return stack
         .slice()
         .reverse()
-        .reduce((p, c, currentIndex) => {
+        .reduce((p, c) => {
           return p + c;
         }, 0);
     }, [stack]);
@@ -95,6 +97,13 @@ export const FormStack = forwardRef<IFormStackRef, IFormStackProps>(
       }).start();
     }, [offset]);
 
+    /**
+     * Call `onUpdate` when `cursor` updated
+     */
+    useEffect(() => {
+      onUpdate?.(cursor);
+    }, [cursor, onUpdate]);
+
     return (
       <View style={[styles.container, {height: containerHeight + offset}]}>
         <Animated.View
@@ -107,7 +116,6 @@ export const FormStack = forwardRef<IFormStackRef, IFormStackProps>(
           }}>
           {Children.map(children, (item, index) => (
             <FormItemWrapper
-              index={index}
               visible={children.length - 1 - cursor <= index}
               onLayout={e =>
                 handleSetHeight(index, e.nativeEvent.layout.height)
@@ -122,14 +130,13 @@ export const FormStack = forwardRef<IFormStackRef, IFormStackProps>(
 );
 
 interface IFormItem {
-  index: number;
   visible: boolean;
   children: ReactNode;
 
   onLayout(e: LayoutChangeEvent): void;
 }
 
-const FormItemWrapper = ({index, visible, children, onLayout}: IFormItem) => {
+const FormItemWrapper = ({visible, children, onLayout}: IFormItem) => {
   const [opacity] = useState(new Animated.Value(0));
 
   /**
