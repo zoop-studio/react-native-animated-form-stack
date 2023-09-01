@@ -48,7 +48,6 @@ jobs:
           path: ./dist
       - name: Publish to npm
         run: yarn publish
-        if: env.NODE_AUTH_TOKEN != ''
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
