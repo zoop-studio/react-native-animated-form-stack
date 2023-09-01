@@ -5,12 +5,13 @@
  * @format
  */
 
-import {useRef} from 'react';
-import {Button, SafeAreaView, ScrollView, View} from 'react-native';
+import {useRef, useState} from 'react';
+import {Button, SafeAreaView, ScrollView, Text, View} from 'react-native';
 import {FormStack, IFormStackRef} from 'react-native-animated-form-stack';
 
 const App = () => {
   const ref = useRef<IFormStackRef>(null);
+  const [step, setStep] = useState(0);
   const handlePressPrev = () => {
     ref.current?.prev();
   };
@@ -22,7 +23,13 @@ const App = () => {
     <SafeAreaView style={{flex: 1}}>
       <View style={{flex: 1}}>
         <ScrollView contentContainerStyle={{flexGrow: 1}}>
-          <FormStack ref={ref}>
+          <Text
+            style={{
+              marginVertical: 12,
+              fontSize: 24,
+              textAlign: 'center',
+            }}>{`Your current step is ${step}`}</Text>
+          <FormStack ref={ref} onUpdate={setStep}>
             <View style={{backgroundColor: 'red', height: 500}} />
             <View style={{backgroundColor: 'yellow', height: 200}} />
             <View style={{backgroundColor: 'green', height: 150}} />
