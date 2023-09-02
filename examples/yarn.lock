@@ -5703,9 +5703,8 @@ react-is@^17.0.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.2.tgz#e691d4a8e9c789365655539ab372762b0efb54f0"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
 
-"react-native-animated-form-stack@file:../react-native-animated-form-stack-v0.2.0.tgz":
-  version "0.2.0"
-  resolved "file:../react-native-animated-form-stack-v0.2.0.tgz#74e4c664149515f38f25a3f9680bf46b8f2e458e"
+"react-native-animated-form-stack@file:../src":
+  version "0.0.0"
 
 react-native@0.72.4:
   version "0.72.4"
