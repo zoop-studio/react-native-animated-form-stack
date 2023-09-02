@@ -6,7 +6,7 @@
 ## Introduction
 Have you ever wondered about creating a component like this? Or have you ever seen such a UI and wished you could implement it effortlessly?
 
-<img alt="Screenshot image" src="./docs/screenshot.gif" width='250' />
+<img alt="Screenshot image" src="https://raw.githubusercontent.com/zoop-studio/react-native-animated-form-stack/main/docs/screenshot.gif" width='250' />
 
 What if just wrapping your existing Form UI with our component could achieve this effect? No need for any additional external libraries; the ones you're already using in your project are sufficient.
 
