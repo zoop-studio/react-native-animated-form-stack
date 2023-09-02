@@ -114,11 +114,8 @@ export const FormStack = forwardRef<IFormStackRef, IProps>(
         if (!loading) {
           return;
         }
-        if (containerHeight + offset !== stack[stack.length - 1]) {
-          return;
-        }
-        if (finished.valueOf()) {
-          setLoading(false);
+        if (finished) {
+          setTimeout(() => setLoading(false), duration);
         }
       });
     }, [duration, offset, loading]);
@@ -148,11 +145,10 @@ export const FormStack = forwardRef<IFormStackRef, IProps>(
       }
       Animated.timing(opacity, {
         toValue: 1,
-        duration: 250,
-        delay: 500,
+        duration: duration,
         useNativeDriver: true,
       }).start();
-    }, [loading]);
+    }, [loading, duration]);
 
     return (
       <View style={[styles.container, {height: containerHeight + offset}]}>
