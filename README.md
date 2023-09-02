@@ -10,7 +10,7 @@ Have you ever wondered about creating a component like this? Or have you ever se
 
 What if just wrapping your existing Form UI with our component could achieve this effect? No need for any additional external libraries; the ones you're already using in your project are sufficient.
 
-Experience the magic of animated forms in a lightweight package of just under 2 KB.
+Experience the magic of animated forms in a lightweight package of just under **3 KB**. 
 
 ## Install
 
@@ -20,61 +20,119 @@ yarn add react-native-animated-form-stack
 
 ## Usage
 
-### 1. Wrap `FormStack`
+### 1. Wrap `FormStackProvider` and `FormStack`
 
-By simply wrapping your filed UI with `FormStack`, you will receive a dynamic form that automatically calculates steps based on the arrangement of the fields and applies dynamic effects.
+By wrapping your filed UI with `FormStackProvider` and `FormStack` as you want, you will get a dynamic form which is automatically calculates its steps based on the arrangement of the fields and applies dynamic effects.
 
 ```tsx
-import { FormStack, IFormStackRef } from 'react-native-animated-form-stack';
+import { FormStackProvider, FormStack } from 'react-native-animated-form-stack';
 
 const Example = () => {
-    const formStackRef = useRef<IFormStackRef>(null);
-    // You can obtain a step whenever it updated
+    return (
+        <FormStack>
+            {/* just place your form here! */}
+        </FormStack>
+    ) 
+}
+
+const App = () => {
+    return <FormStackProvider>
+        <Example />
+    </FormStackProvider>
+}
+```
+
+### 2. Use hooks
+
+If you complete the previous step, now you can use hooks which are able to obtain or update the current step.
+
+```tsx
+import { 
+    ...
+    useFormStackValue,
+    useFormStackAction
+} from 'react-native-animated-form-stack';
+import { View, Text } from 'react-native';
+
+const ThirdField = () => {
+    const {step} = useFormStackValue();
+    return (
+        <View>
+            <Text>{step}</Text>
+        </View>
+    )
+}
+
+const FirstField = () => {
+    const {update} = useFormStackAction();
+    return (
+        <View>
+            {/* This action expected to expose `ThirdFiled` */}
+            <Button title={'Go to step 2'} onPress={() => update(2)} />
+        </View>
+    )
+}
+
+const Example = () => {
+    return (
+        <FormStack>
+            <ThirdField />
+            <SecondField />
+            <FirstField />
+        </FormStack>
+    ) 
+}
+
+const App = () => {
+    return <FormStackProvider>
+        <Example />
+    </FormStackProvider>
+}
+```
+
+<img alt="Screenshot image" src="https://raw.githubusercontent.com/zoop-studio/react-native-animated-form-stack/main/docs/screenshot-use-hook.gif" width='250' />
+
+### 3. Use methods
+
+Or in case of you don't need to use hook, you can handle the step by methods.
+
+```tsx
+import { 
+    ...
+    IFormStackRef
+} from 'react-native-animated-form-stack';
+
+const Example = () => {
+    const ref = useRef<IFormStackRef>(null);
     const [step, setStep] = useState(0);
     
+    // You can call the method which is able to handle inner state of the `FormStack`
+    const handlePressPrev = () => {
+        ref.current?.prev();
+    };
+    
+    const handlePressNext = () => {
+        ref.current?.next();
+    };
+    
     return (
-        <FormStack ref={formStackRef} onUpdate={setStep}>
-            {/* just place your form here! */}
-            <YourField />
-            <YourField />
-            <YourField />
-        </FormStack>
+        <View style={{ flex: 1 }}>
+            <FormStack
+                ref={ref}
+                onUpdate={setStep} // Update a state when `FormStack` is updated
+            >
+                {/* just place your form here! */}
+            </FormStack>
+            <View>
+                <Button title={'Previous'} onPress={handlePressPrev} />
+                <Button title={'Next'} onPress={handlePressNext} />
+            </View>
+        </View>
     ) 
 }
 ```
 
-### 2. Call the functions to handle step
-
-Now, you can handle the step of `StackForm` by calling the methods of it; `prev()`, `next()`
-
-```diff
-import { FormStack, IFormStackRef } from 'react-native-animated-form-stack';
-
-const Example = () => {
-    const formStackRef = useRef<IFormStackRef>(null);
-    // You can obtain a step whenever it updated
-    const [step, setStep] = useState(0);
-    
-+    const handlePressPrev = () => {
-+        // Show previous step of field
-+        ref.current?.prev();
-+    };
-
-+    const handlePressNext = () => {
-+        // Show a next step of field
-+        ref.current?.next();
-+    };
-    
-    return (
-        <FormStack ref={formStackRef} onUpdate={setStep}>
-            {/* just place your form here! */}
-            <YourField />
-            <YourField />
-            <YourField />
-        </FormStack>
-    ) 
-}
-```
+<img alt="Screenshot image" src="https://raw.githubusercontent.com/zoop-studio/react-native-animated-form-stack/main/docs/screenshot-use-method.gif" width='250' />
 
 ## Contribute
 
