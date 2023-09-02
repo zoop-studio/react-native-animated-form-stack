@@ -15,11 +15,8 @@ import {
   StyleSheet,
   ViewProps,
   LayoutChangeEvent,
-  Dimensions,
 } from 'react-native';
 import {useFormStackAction, useFormStackValue} from './FormStackProvider';
-
-const {height: DEVICE_HEIGHT} = Dimensions.get('screen');
 
 interface IProps {
   initialStep?: number;
@@ -38,12 +35,19 @@ export interface IFormStackRef {
 
 export const FormStack = forwardRef<IFormStackRef, IProps>(
   ({initialStep = 0, gap = 0, duration = 250, children, onUpdate}, ref) => {
+    /**
+     * Exclude child elements if it's `null`
+     */
+    const elements = Children.toArray(children).filter(c => c !== null);
     const {step} = useFormStackValue();
     const {update} = useFormStackAction();
 
     const [loading, setLoading] = useState(true);
-    const [stack, setStack] = useState<number[]>([]);
-    const [transitionY] = useState(new Animated.Value(-1 * DEVICE_HEIGHT));
+    const [stack, setStack] = useState<number[]>(
+      new Array(elements.length).fill(0),
+    );
+
+    const [transitionY] = useState(new Animated.Value(0));
     const [opacity] = useState(new Animated.Value(1));
 
     /**
@@ -105,8 +109,19 @@ export const FormStack = forwardRef<IFormStackRef, IProps>(
         toValue: offset,
         duration: loading ? 0 : duration,
         useNativeDriver: true,
-      }).start();
-    }, [duration, loading, offset]);
+      }).start(({finished}) => {
+        // Switch the `loading` state to true when the calculation is done and the first field is ready to be exposed.
+        if (!loading) {
+          return;
+        }
+        if (containerHeight + offset !== stack[stack.length - 1]) {
+          return;
+        }
+        if (finished.valueOf()) {
+          setLoading(false);
+        }
+      });
+    }, [duration, offset, loading]);
 
     /**
      * Call `onUpdate` when `cursor` updated
@@ -115,19 +130,29 @@ export const FormStack = forwardRef<IFormStackRef, IProps>(
       onUpdate?.(step);
     }, [step, onUpdate]);
 
+    /**
+     * Update a step when `initialStep` is exist
+     */
     useEffect(() => {
       if (initialStep) {
         update(initialStep);
       }
     }, [initialStep]);
 
+    /**
+     * Expose entire children elements when all the computations is completed
+     */
     useEffect(() => {
+      if (loading) {
+        return;
+      }
       Animated.timing(opacity, {
         toValue: 1,
+        duration: 250,
         delay: 500,
         useNativeDriver: true,
-      }).start(() => setLoading(false));
-    }, []);
+      }).start();
+    }, [loading]);
 
     return (
       <View style={[styles.container, {height: containerHeight + offset}]}>
@@ -140,18 +165,19 @@ export const FormStack = forwardRef<IFormStackRef, IProps>(
               },
             ],
           }}>
-          {Children.map(children, (item, index) =>
-            !item ? null : (
+          {elements.map((item, index) => {
+            return (
               <FormItemWrapper
-                visible={children.length - 1 - step <= index}
+                key={`FormItemWrapper:${index}`}
+                visible={!loading && elements.length - 1 - step <= index}
                 onLayout={e =>
                   handleSetHeight(index, e.nativeEvent.layout.height)
                 }>
                 {item}
                 <View style={{height: index === stack.length - 1 ? 0 : gap}} />
               </FormItemWrapper>
-            ),
-          )}
+            );
+          })}
         </Animated.View>
       </View>
     );
