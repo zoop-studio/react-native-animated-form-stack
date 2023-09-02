@@ -15,9 +15,16 @@ import {
   StyleSheet,
   ViewProps,
   LayoutChangeEvent,
+  Dimensions,
 } from 'react-native';
+import {useFormStackAction, useFormStackValue} from './FormStackProvider';
 
-export interface IFormStackProps {
+const {height: DEVICE_HEIGHT} = Dimensions.get('screen');
+
+interface IProps {
+  initialStep?: number;
+  gap?: number;
+  duration?: number;
   children: Array<ReactElement<ViewProps> | null>;
 
   onUpdate?(step: number): void;
@@ -29,11 +36,15 @@ export interface IFormStackRef {
   next(): void;
 }
 
-export const FormStack = forwardRef<IFormStackRef, IFormStackProps>(
-  ({children, onUpdate}, ref) => {
+export const FormStack = forwardRef<IFormStackRef, IProps>(
+  ({initialStep = 0, gap = 0, duration = 250, children, onUpdate}, ref) => {
+    const {step} = useFormStackValue();
+    const {update} = useFormStackAction();
+
+    const [loading, setLoading] = useState(true);
     const [stack, setStack] = useState<number[]>([]);
-    const [cursor, setCursor] = useState(0);
-    const [transitionY] = useState(new Animated.Value(0));
+    const [transitionY] = useState(new Animated.Value(-1 * DEVICE_HEIGHT));
+    const [opacity] = useState(new Animated.Value(1));
 
     /**
      * Entire child elements height
@@ -52,10 +63,10 @@ export const FormStack = forwardRef<IFormStackRef, IFormStackProps>(
      */
     const offset: number = useMemo(() => {
       const reverse = stack.slice().reverse();
-      const calStack = reverse.slice(0, cursor + 1);
+      const calStack = reverse.slice(0, step + 1);
 
       return calStack.reduce((p, c) => p + c, -1 * containerHeight);
-    }, [stack, cursor, containerHeight]);
+    }, [stack, step, containerHeight]);
 
     const handleSetHeight = useCallback((idx: number, value: number) => {
       setStack(prev => {
@@ -66,16 +77,16 @@ export const FormStack = forwardRef<IFormStackRef, IFormStackProps>(
     }, []);
 
     const handleSetPrevStep = () => {
-      if (cursor === 0) {
+      if (step === 0) {
         return;
       }
-      setCursor(prev => prev - 1);
+      update(step - 1);
     };
     const handleSetNextStep = () => {
-      if (stack[cursor + 1] === undefined) {
+      if (stack[step + 1] === undefined) {
         return;
       }
-      setCursor(prev => prev + 1);
+      update(step + 1);
     };
 
     /**
@@ -92,37 +103,55 @@ export const FormStack = forwardRef<IFormStackRef, IFormStackProps>(
     useEffect(() => {
       Animated.timing(transitionY, {
         toValue: offset,
-        duration: cursor > 0 ? 250 : 0,
+        duration: loading ? 0 : duration,
         useNativeDriver: true,
       }).start();
-    }, [offset]);
+    }, [duration, loading, offset]);
 
     /**
      * Call `onUpdate` when `cursor` updated
      */
     useEffect(() => {
-      onUpdate?.(cursor);
-    }, [cursor, onUpdate]);
+      onUpdate?.(step);
+    }, [step, onUpdate]);
+
+    useEffect(() => {
+      if (initialStep) {
+        update(initialStep);
+      }
+    }, [initialStep]);
+
+    useEffect(() => {
+      Animated.timing(opacity, {
+        toValue: 1,
+        delay: 500,
+        useNativeDriver: true,
+      }).start(() => setLoading(false));
+    }, []);
 
     return (
       <View style={[styles.container, {height: containerHeight + offset}]}>
         <Animated.View
           style={{
+            opacity,
             transform: [
               {
                 translateY: transitionY,
               },
             ],
           }}>
-          {Children.map(children, (item, index) => (
-            <FormItemWrapper
-              visible={children.length - 1 - cursor <= index}
-              onLayout={e =>
-                handleSetHeight(index, e.nativeEvent.layout.height)
-              }>
-              {item}
-            </FormItemWrapper>
-          ))}
+          {Children.map(children, (item, index) =>
+            !item ? null : (
+              <FormItemWrapper
+                visible={children.length - 1 - step <= index}
+                onLayout={e =>
+                  handleSetHeight(index, e.nativeEvent.layout.height)
+                }>
+                {item}
+                <View style={{height: index === stack.length - 1 ? 0 : gap}} />
+              </FormItemWrapper>
+            ),
+          )}
         </Animated.View>
       </View>
     );

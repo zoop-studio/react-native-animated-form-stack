@@ -4,6 +4,6 @@
       "dist/FormStack*.js",
       "dist/FormStack*.ts"
     ],
-    "limit": "2 KB"
+    "limit": "3 KB"
   }
 ]
