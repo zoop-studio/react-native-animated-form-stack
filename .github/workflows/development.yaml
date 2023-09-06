@@ -1,0 +1,40 @@
+name: Pull Request of development
+
+on:
+  pull_request:
+    branches:
+      - 'dev'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: yarn install --frozen-lockfile
+      - run: yarn test
+      - name: Check size limit
+        uses: andresz1/size-limit-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Split Action
+        id: prefix
+        uses: JungWinter/split@v2.1.0
+        with:
+          msg: ${{ github.head_ref }}
+          separator: '/'
+
+      - name: Add label and update title
+        if: ${{ !startsWith(github.event.pull_request.title, steps.prefix.outputs._0) }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label ${{ steps.prefix.outputs._0 }} --title "${{ steps.prefix.outputs._0 }}: ${{ github.event.pull_request.title }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

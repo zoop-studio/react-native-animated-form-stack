@@ -13,4 +13,5 @@ yarn-error.log
 .idea
 dist/
 *.tgz
+coverage/
 
