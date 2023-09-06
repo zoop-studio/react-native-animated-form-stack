@@ -2,21 +2,15 @@ import React, {
   Children,
   forwardRef,
   ReactElement,
-  ReactNode,
   useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
   useState,
 } from 'react';
-import {
-  View,
-  Animated,
-  StyleSheet,
-  ViewProps,
-  LayoutChangeEvent,
-} from 'react-native';
+import {View, Animated, StyleSheet, ViewProps} from 'react-native';
 import {useFormStackAction, useFormStackValue} from './FormStackProvider';
+import {FormItemWrapper} from './FormItemWrapper';
 
 interface IProps {
   initialStep?: number;
@@ -48,7 +42,7 @@ export const FormStack = forwardRef<IFormStackRef, IProps>(
     );
 
     const [transitionY] = useState(new Animated.Value(0));
-    const [opacity] = useState(new Animated.Value(1));
+    const [opacity] = useState(new Animated.Value(0));
 
     /**
      * Entire child elements height
@@ -136,25 +130,11 @@ export const FormStack = forwardRef<IFormStackRef, IProps>(
       }
     }, [initialStep]);
 
-    /**
-     * Expose entire children elements when all the computations is completed
-     */
-    useEffect(() => {
-      if (loading) {
-        return;
-      }
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: duration,
-        useNativeDriver: true,
-      }).start();
-    }, [loading, duration]);
-
     return (
       <View style={[styles.container, {height: containerHeight + offset}]}>
         <Animated.View
+          testID={'FormStack'}
           style={{
-            opacity,
             transform: [
               {
                 translateY: transitionY,
@@ -179,39 +159,6 @@ export const FormStack = forwardRef<IFormStackRef, IProps>(
     );
   },
 );
-
-interface IFormItem {
-  visible: boolean;
-  children: ReactNode;
-
-  onLayout(e: LayoutChangeEvent): void;
-}
-
-const FormItemWrapper = ({visible, children, onLayout}: IFormItem) => {
-  const [opacity] = useState(new Animated.Value(0));
-
-  /**
-   * Opacity updated by given `visible` prop
-   */
-  useEffect(() => {
-    Animated.timing(opacity, {
-      toValue: visible ? 1 : 0,
-      duration: 250,
-      delay: 0,
-      useNativeDriver: true,
-    }).start();
-  }, [visible]);
-
-  return (
-    <Animated.View
-      style={{
-        opacity: opacity,
-      }}
-      onLayout={onLayout}>
-      {children}
-    </Animated.View>
-  );
-};
 
 const styles = StyleSheet.create({
   container: {
